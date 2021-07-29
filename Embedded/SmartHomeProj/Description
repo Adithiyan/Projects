@@ -1,0 +1,86 @@
+Smart Home
+ADITHIYAN RAJAN
+
+LDR Sensor detects change in light intensity. Used to switch on the room lights (blue LED) when the sunlight is low – can be replaced with force sensor, flex sensor according to need and application
+Ultrasonic sensor detects presence of object. Used to open the door, here indicated by the servo motor, if the is an object close by. 
+PIR sensor (motion detector) detects motion. Used in rooms, corridors, staircases etc. to switch on lights when motion is detected. 
+Temperature sensor measures and returns temperature. Used here to turn on the fan or ac, here indicated by red LED, when temperature gets too high.
+Gas detector detects if there is smoke. Used to set of alarm, here piezo, if the smoke is above a certain threshold. 
+
+Circuit
+ 
+
+CODE
+#include <Servo.h>
+
+int dist = 0;
+int light =0;
+int gas =0;
+
+long readUltrasonicDistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT);  // Clear the trigger
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigger pin to HIGH state for 10 microseconds
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+  pinMode(echoPin, INPUT);
+  // Reads the echo pin, and returns the sound wave travel time in microseconds
+  return pulseIn(echoPin, HIGH);
+}
+
+Servo servo_8;
+
+void setup()
+{
+  servo_8.attach(8, 500, 2500);
+
+  pinMode(2, INPUT);
+  pinMode(12, OUTPUT); // blub
+  pinMode(A0, INPUT);
+  pinMode(A2, INPUT); // smoke dec
+  
+  pinMode(9, OUTPUT); // red led
+  pinMode(11, OUTPUT); //white led - room light
+  pinMode(4, OUTPUT); // piezo
+}
+
+void loop()
+{
+  dist = 0.01723 * readUltrasonicDistance(7, 7);
+  if (dist <= 100) {
+    servo_8.write(90);
+    delay(500); // Wait for 1000 millisecond(s)
+  } else {
+    servo_8.write(0);
+    delay(500); // Wait for 1000 millisecond(s)
+  }
+  if (digitalRead(2) == 1) {
+    digitalWrite(12, HIGH);
+    delay(500); // Wait for 1000 millisecond(s)
+  } else {
+    digitalWrite(12, LOW);
+    delay(500); // Wait for 1000 millisecond(s)
+  }
+  if (analogRead(A0) > 200) {
+    digitalWrite(9, HIGH);
+    delay(500); // Wait for 1000 millisecond(s)
+  } else {
+    digitalWrite(9, LOW);
+    delay(500); // Wait for 1000 millisecond(s)
+  }
+   light = analogRead(A1);
+  analogWrite(11,map(light,1023,0,0,255));
+  
+  gas = analogRead(A2);
+   if (gas > 250) {
+    digitalWrite(4, HIGH);
+    delay(500); // Wait for 1000 millisecond(s)
+  } else {
+    digitalWrite(4, LOW);
+    delay(500); // Wait for 1000 millisecond(s)
+  }
+  
+}
